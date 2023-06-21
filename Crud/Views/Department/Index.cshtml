@@ -1,0 +1,103 @@
+﻿@model Crud.Models.StudentViewModel
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container" style="margin:3px">
+    <a href="#" class="btn btn-default" onclick="AddNewStudent(0)">Add New Student</a>
+    <br />
+    <br />
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student Id</th>
+                <th>Student Name</th>
+                <th>Student Email</th>
+                <th>Department Id</th>
+                <th>Department Name</th>
+                <th>Action(Edit)</th>
+                <th>Action(Delete)</th>
+            </tr>
+        </thead>
+        <tbody id="SetStudentList">
+            <tr id="LoadingStatus" style="color:red"></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="MyModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <a href="#" class="close" data-dismiss="modal">&times;</a>
+                <h4 id="ModalTitle"></h4>
+            </div>
+            <div class="modal-body">
+                <fieldset id="SubmitForm">
+                    @Html.HiddenFor(m => m.Studentld, new { id = "StuId" })
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.StudentName, new { id = "Name", @class = "form-control", placeholder = "Name" })
+                    </div>
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.StudentEmail, new { id = "StudentEmail", @class = "form-control", placeholder = "Email" })
+                    </div>
+                    <div class="form-group">
+                        @Html.DropDownListFor(m => m.DepartmentId, ViewBag.dep_list as SelectList, "Select Dept", new { id = "Dropdown", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <a href="#" class="btn btn-block btn-danger" id="SaveStudentRecord">Save</a>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#LoadingStatus").html("Loading....");
+    $.get("/Department/GetStudentList", null, DataBind);
+
+    function DataBind(StudentList) {
+        var SetData = $("#SetStudentList");
+        for (var i = 0; i < StudentList.length; i++) {
+            var Data = "<tr>" +
+                "<td>" + StudentList[i].Studentld + "</td>" +
+                "<td>" + StudentList[i].StudentName + "</td>" +
+                "<td>" + StudentList[i].StudentEmail + "</td>" +
+                "<td>" + StudentList[i].DepartmentId + "</td>" +
+                "<td>" + StudentList[i].DepartmentName + "</td>" +
+                "<td>Edit</td>" +
+                "<td>Delete</td>" +
+                "</tr>";
+
+            SetData.append(Data);
+            $("#LoadingStatus").html("");
+        }
+    }
+
+
+    $("#SaveStudentRecord").click(function () {
+        var data = $("#SubmitForm").serialize();
+        $.ajax(
+            {
+                type: "Post",
+                url: "/Department/SaveDataInDatabase",
+                data: data,
+
+                success: function (result) {
+                    alert("Success!");
+                    window.location.href = "/Department/Index";
+                    $("#MyModel").modal("hide");
+                }
+            })
+    })
+
+    function AddNewStudent(StudentId) {
+        $("#MyModal").modal();
+        $("#StuId").val(0);
+        $("#Dropdown").val('');
+        $("#ModalTitle").html("Add New Student");
+    }
+
+</script>
